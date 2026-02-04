@@ -4,6 +4,16 @@
 
 ---
 
+## 진행 현황
+
+| # | 이슈 | 상태 | 비고 |
+|---|------|------|------|
+| 1 | PyRosetta 설치 | ✅ 완료 | `verify_bio_tools_env.py` 통과 |
+| 2 | AutoDock-GPU 빌드 | 대기 | |
+| 3 | AlphaFold3 env 정리 | 대기 | |
+
+---
+
 ## 이슈 1: [Infra] bio-tools conda 환경에 PyRosetta 설치
 
 **Type:** Engineering / Code  
