@@ -16,5 +16,8 @@ build/
 .DS_Store
 Thumbs.db
 
+# Local tools (cloned/built here, optional)
+/tools/
+
 # Large data (optional: uncomment if you don't want to track)
 # fold_test1*/

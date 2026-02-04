@@ -9,7 +9,7 @@
 | # | 이슈 | 상태 | 비고 |
 |---|------|------|------|
 | 1 | PyRosetta 설치 | ✅ 완료 | `verify_bio_tools_env.py` 통과 |
-| 2 | AutoDock-GPU 빌드 | 대기 | |
+| 2 | AutoDock-GPU 빌드 | ⏳ 스크립트+클론 완료, CUDA 설치 후 `./scripts/build_autodock_gpu.sh` 실행 | |
 | 3 | AlphaFold3 env 정리 | 대기 | |
 
 ---

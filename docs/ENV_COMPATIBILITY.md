@@ -67,14 +67,24 @@ AlphaFold3와 MCP는 아래대로 분리 권장.
 
 같은 환경에서 “돌린다”는 것은 **Meeko로 전처리 + 이 바이너리 실행**까지를 하나의 워크플로로 쓰는 의미이므로, 바이너리는 아래처럼 따로 빌드하면 됨.
 
-1. CUDA 툴킷 설치 (WSL): `nvidia-cuda-dev` 등
-2. 저장소 클론 후:
-   ```bash
-   export GPU_INCLUDE_PATH=/usr/include
-   export GPU_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
-   make DEVICE=GPU   # 또는 make DEVICE=CUDA
-   ```
-3. `bin/autodock_gpu_64wi` (또는 128wi 등)를 PATH에 넣거나, 스크립트에서 절대경로로 호출
+### 3.1 사전 준비 (WSL)
+
+- **빌드 도구**: `sudo apt install build-essential`
+- **CUDA 개발 패키지** (둘 중 하나):
+  - Ubuntu/Debian: `sudo apt install nvidia-cuda-dev` → 이후 `GPU_INCLUDE_PATH=/usr/include`, `GPU_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu`
+  - 또는 [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-downloads) 설치 → `GPU_INCLUDE_PATH=/usr/local/cuda/include`, `GPU_LIBRARY_PATH=/usr/local/cuda/lib64`
+
+### 3.2 이 레포에서 빌드하기
+
+- 소스는 `tools/AutoDock-GPU`에 클론해 두었음 (`tools/`는 .gitignore).
+- **한 번에 빌드**: `./scripts/build_autodock_gpu.sh` (CUDA 경로가 없으면 안내 메시지 후 종료. 위 사전 준비 후 다시 실행.)
+- 수동 빌드:
+  ```bash
+  export GPU_INCLUDE_PATH=/usr/include   # 또는 /usr/local/cuda/include
+  export GPU_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu   # 또는 /usr/local/cuda/lib64
+  cd tools/AutoDock-GPU && make DEVICE=GPU NUMWI=64
+  ```
+- 실행 파일: `tools/AutoDock-GPU/bin/autodock_gpu_64wi` → PATH에 추가하거나 절대 경로로 호출.
 
 AutoGrid는 [ccsb-scripps/AutoGrid](https://github.com/ccsb-scripps/autogrid) 에서 meson/autotools로 빌드 후 동일하게 PATH 또는 경로 지정.
 
