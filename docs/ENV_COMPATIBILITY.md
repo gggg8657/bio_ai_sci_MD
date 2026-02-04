@@ -92,7 +92,7 @@ AutoGrid는 [ccsb-scripps/AutoGrid](https://github.com/ccsb-scripps/autogrid) �
 
 ## 4. 다음 액션 제안
 
-1. **지금 진행**: `bio-tools` conda 환경 생성 → PyRosetta, Biopython, Meeko 설치 → 검증 스크립트 실행.
-2. **AutoDock-GPU**: 위 절차로 WSL에서 빌드 후, `bio-tools` env에서 Meeko + 바이너리로 실행 테스트.
-3. **AlphaFold3**: 공개 설치 방법 확정 후 전용 Docker 또는 `alphafold` env 로 분리 설치.
+1. ~~**지금 진행**: `bio-tools` conda 환경 생성 → PyRosetta, Biopython, Meeko 설치~~ → 완료.
+2. **AutoDock-GPU**: CUDA 툴킷 설치 후 `./scripts/build_autodock_gpu.sh` 실행 → `bio-tools` env에서 Meeko + 바이너리로 실행 테스트.
+3. **AlphaFold3**: 전용 Docker 권장 (공식 가이드). conda 전용 env는 AF3 공개 설치법 확정 후 `environment-alphafold.yml` 추가. `ENVIRONMENT.md`에 AlphaFold 섹션 반영됨.
 4. **MCP**: 사용할 MCP 서버 목록 정한 뒤, `bio-tools` 포함 여부 또는 별도 env 결정.

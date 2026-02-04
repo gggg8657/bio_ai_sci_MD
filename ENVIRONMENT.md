@@ -43,4 +43,10 @@
 - **NOTES:**
   - PyRosetta 학술/비영리 라이선스.
   - AutoDock-GPU 바이너리·AutoGrid는 별도 빌드 후 PATH 또는 스크립트 경로 지정. 호환성·빌드 요약은 `docs/ENV_COMPATIBILITY.md`.
-  - AlphaFold3는 별도 Docker 또는 전용 env 권장.
+  - AlphaFold3는 별도 Docker 또는 전용 env 권장. 아래 "AlphaFold 전용" 참고.
+- **AlphaFold 전용 (추후):**
+  - **ENV_NAME:** alphafold (또는 Docker 사용)
+  - **권장:** [공식 Docker](https://github.com/google-deepmind/alphafold#installation-and-running-your-first-prediction) 사용. 로컬 conda 시 JAX/CUDA 버전 충돌 가능.
+  - **CREATE (Docker):** `docker build -f docker/Dockerfile -t alphafold .` 및 DB 다운로드.
+  - **CREATE (conda, 비권장):** 전용 env에 AlphaFold 요구사항만 설치. AF3 공개 설치법 확정 후 `environment-alphafold.yml` 추가 예정.
+  - **NOTES:** bio-tools와 동일 env에 넣지 말 것. 자세한 호환성은 `docs/ENV_COMPATIBILITY.md`.
