@@ -1,0 +1,20 @@
+# Conda
+.conda/
+*.conda
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Large data (optional: uncomment if you don't want to track)
+# fold_test1*/

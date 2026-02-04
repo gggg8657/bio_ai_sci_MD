@@ -1,0 +1,23 @@
+# Conda environment: PyRosetta + Biopython + Meeko (AutoDock-GPU workflow)
+# AutoDock-GPU binary: build separately and add to PATH (see docs/ENV_COMPATIBILITY.md)
+# Create: conda env create -f environment-bio-tools.yml
+# Activate: conda activate bio-tools
+
+name: bio-tools
+channels:
+  - conda-forge
+  # RosettaCommons: add when installing PyRosetta (conda install -c https://conda.rosettacommons.org -c conda-forge pyrosetta)
+  # defaults: omitted to avoid Anaconda ToS; use conda-forge only for base deps
+dependencies:
+  - python>=3.10,<3.13
+  - pip
+  - biopython
+  - numpy
+  - scipy
+  - rdkit  # required by meeko
+  - gemmi   # required by meeko (polymer/receptor)
+  - pip:
+    - meeko
+    # PyRosetta: install via conda (preferred) or pip quarterly wheel
+    # Conda (run after env create): conda install -c https://conda.rosettacommons.org -c conda-forge pyrosetta
+    # Pip quarterly: pip install pyrosetta --find-links https://west.rosettacommons.org/pyrosetta/quarterly/release
