@@ -1,0 +1,14 @@
+# Shared conda profile for Windows and WSL.
+# Create env: conda env create -f environment.yml
+# Activate:  conda activate bio
+
+name: bio
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10,<3.13
+  - pip
+  # Optional: add project deps here or via pip in a separate requirements.txt
+  # - numpy
+  # - biopython

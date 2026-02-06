@@ -1,23 +1,27 @@
-# Conda environment: PyRosetta + Biopython + Meeko (AutoDock-GPU workflow)
-# AutoDock-GPU binary: build separately and add to PATH (see docs/ENV_COMPATIBILITY.md)
+# Conda environment: PyRosetta + FoldMason + PyMOL + Biopython + Meeko
+# Target: Ubuntu 22.04 / WSL2
 # Create: conda env create -f environment-bio-tools.yml
 # Activate: conda activate bio-tools
 
 name: bio-tools
 channels:
+  - https://conda.rosettacommons.org   # PyRosetta
   - conda-forge
-  # RosettaCommons: add when installing PyRosetta (conda install -c https://conda.rosettacommons.org -c conda-forge pyrosetta)
-  # defaults: omitted to avoid Anaconda ToS; use conda-forge only for base deps
+  - bioconda                            # FoldMason
+  - defaults
 dependencies:
   - python>=3.10,<3.13
   - pip
-  - biopython
+  # Core scientific stack
   - numpy
   - scipy
-  - rdkit  # required by meeko
-  - gemmi   # required by meeko (polymer/receptor)
+  # Structural biology
+  - biopython
+  - rdkit                               # required by meeko
+  - gemmi                               # required by meeko (polymer/receptor)
+  # Analysis tools
+  - pyrosetta                           # Rosetta molecular modeling
+  - pymol-open-source                   # Molecular visualization
+  - foldmason                           # Multiple structure alignment
   - pip:
-    - meeko
-    # PyRosetta: install via conda (preferred) or pip quarterly wheel
-    # Conda (run after env create): conda install -c https://conda.rosettacommons.org -c conda-forge pyrosetta
-    # Pip quarterly: pip install pyrosetta --find-links https://west.rosettacommons.org/pyrosetta/quarterly/release
+    - meeko                             # AutoDock-GPU receptor/ligand prep

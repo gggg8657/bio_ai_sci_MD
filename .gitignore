@@ -19,5 +19,24 @@ Thumbs.db
 # Local tools (cloned/built here, optional)
 /tools/
 
-# Large data (optional: uncomment if you don't want to track)
+# Large data / results (optional: uncomment if you don't want to track)
 # fold_test1*/
+
+# FoldMason results (large HTML/FASTA outputs)
+result_foldmason*
+/tmp/
+
+# PyMOL session files
+*.pse
+*.pse.gz
+
+# Temporary / cache
+*.log
+*.tmp
+.cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment-specific (don't commit local prefix)
+*.local.yml
