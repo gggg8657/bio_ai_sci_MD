@@ -258,9 +258,11 @@ PRST_N_FM/
 ## 참고 문서
 
 - [전체 실험 보고서](experiments/00_FULL_REPORT.md)
-- [BioNeMo 모듈 가이드](bionemo/README.md)
-- [FoldMason 완전 가이드](docs/FOLDMASON_REFERENCE.md)
-- [PyMOL 완전 가이드](docs/PYMOL_REFERENCE.md)
+- [BioNeMo / NVIDIA NIM 완전 가이드](docs/BIONEMO_REFERENCE.md) -- 13개 AI 모델 + 응용 워크플로우
+- [BioNeMo 모듈 가이드](bionemo/README.md) -- API 클라이언트 코드 사용법
+- [PyRosetta 완전 가이드](docs/PYROSETTA_REFERENCE.md) -- 14개 기능 + 펩타이드 설계
+- [FoldMason 완전 가이드](docs/FOLDMASON_REFERENCE.md) -- 구조 정렬 + 수용체 분석
+- [PyMOL 완전 가이드](docs/PYMOL_REFERENCE.md) -- 시각화 + 도킹 포즈 분석
 - [환경 호환성 분석](docs/ENV_COMPATIBILITY.md)
 - [PDB 시각화 도구 비교](docs/PDB_VISUALIZATION_TOOLS.md)
 

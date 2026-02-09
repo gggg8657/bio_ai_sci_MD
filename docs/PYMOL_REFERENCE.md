@@ -1049,9 +1049,442 @@ set cartoon_transparency, 0.5
 
 ---
 
+## 펩타이드 리간드 설계 응용
+
+> 이 섹션은 SSTR2, PSMA, FAP 등 수용체 타겟에 대한 펩타이드 리간드 설계 과정에서 PyMOL을 활용하는 방법을 다룹니다.
+
+### Pharmacophore 시각화
+
+바인딩 포켓 표면 위에 리간드의 약효단(수소결합 donor/acceptor, 방향족, 양전하)을 표시합니다.
+
+```python
+# 수용체 표면 + 리간드 약효단 표시
+hide everything
+show cartoon, chain B             # SSTR2 수용체
+show surface, chain B
+set transparency, 0.7, chain B
+
+show sticks, chain A              # 펩타이드 리간드 (Somatostatin)
+util.cbay chain A                 # 탄소=노란색 (리간드 강조)
+
+# 수소결합 donor/acceptor 표시 (극성 접촉)
+distance hbonds, chain A, chain B, mode=2
+set dash_color, yellow, hbonds
+set dash_width, 2.5
+set dash_gap, 0.2
+
+# 방향족 잔기 강조 (Phe, Trp, Tyr)
+select aromatics, chain A and resn PHE+TRP+TYR
+show spheres, aromatics and name CG+CD1+CD2+CE1+CE2+CZ+CH2+NE1
+set sphere_scale, 0.3, aromatics
+
+# 양전하 잔기 강조 (Lys, Arg)
+select positive, chain A and resn LYS+ARG
+color blue, positive and name NZ+NH1+NH2+NE
+show spheres, positive and name NZ+NH1+NH2+NE
+set sphere_scale, 0.4, positive
+
+# 바인딩 포켓 잔기 라벨
+select pocket, chain B within 5 of chain A
+label pocket and name CA, "%s%s" % (resn, resi)
+set label_size, 12
+set label_color, white
+```
+
+### 도킹 포즈 비교
+
+DiffDock, FlexPepDock 등에서 생성한 여러 도킹 포즈를 중첩하여 비교합니다.
+
+```python
+# 여러 도킹 포즈 로드
+load sstr2_receptor.pdb, receptor
+load pose_1.pdb, pose1
+load pose_2.pdb, pose2
+load pose_3.pdb, pose3
+
+# 수용체에 정렬
+align pose1, receptor
+align pose2, receptor
+align pose3, receptor
+
+# 수용체: 회색 cartoon
+hide everything
+show cartoon, receptor
+color gray80, receptor
+
+# 포즈별 색상 (confidence/score 기반)
+show sticks, pose1
+show sticks, pose2
+show sticks, pose3
+color tv_red, pose1       # 최고 confidence
+color tv_orange, pose2    # 중간
+color tv_blue, pose3      # 낮은
+
+# 공통 바인딩 부위 하이라이트
+select common_site, receptor within 4 of (pose1 or pose2 or pose3)
+show sticks, common_site
+color palegreen, common_site
+
+# 포즈 간 RMSD 계산
+rms_cur pose2, pose1
+rms_cur pose3, pose1
+
+zoom pose1 or pose2 or pose3, 8
+```
+
+#### Confidence 기반 스펙트럼 색상
+
+```python
+# DiffDock confidence를 B-factor에 매핑하여 스펙트럼 표시
+# (사전에 PDB B-factor를 confidence로 설정한 경우)
+spectrum b, red_white_blue, pose1
+# 낮은 confidence=빨강, 높은 confidence=파랑
+```
+
+### 킬레이터-펩타이드 복합체 시각화
+
+방사성 의약품에서 DOTA/NOTA 킬레이터 + 링커 + 펩타이드 구조를 시각화합니다.
+
+```python
+# 킬레이터-링커-펩타이드 복합체 로드
+load DOTA_octreotide.pdb, complex
+
+# 구성요소별 분리 표시
+# 가정: 킬레이터=잔기 1, 링커=잔기 2-3, 펩타이드=잔기 4-11
+hide everything
+
+# 킬레이터 (DOTA/NOTA) -- ball-and-stick
+select chelator, resi 1
+show sticks, chelator
+show spheres, chelator and elem Ga+Lu+Y+In+Cu  # 금속 이온
+set sphere_scale, 0.5, chelator
+color magenta, chelator
+color orange, chelator and elem Ga+Lu+Y+In+Cu
+
+# 링커 -- 투명 sticks
+select linker, resi 2-3
+show sticks, linker
+color gray50, linker
+set stick_transparency, 0.3, linker
+
+# 펩타이드 -- cartoon + sticks
+select peptide, resi 4-11
+show cartoon, peptide
+show sticks, peptide and sidechain
+util.cbac peptide            # 탄소=청록색
+
+# 거리 측정 (금속-배위 원자)
+distance metal_coord, chelator and elem Lu, chelator and elem N+O, mode=0
+set dash_color, orange, metal_coord
+set dash_width, 3.0
+
+# 전체 구조 줌
+zoom complex, 5
+```
+
+### B-factor / pLDDT 신뢰도 맵
+
+ESMFold, AlphaFold3 결과의 신뢰도를 색상 스펙트럼으로 표현합니다.
+
+```python
+# AlphaFold3/ESMFold 결과 로드 (B-factor에 pLDDT 저장됨)
+load esmfold_predicted.pdb, predicted
+
+# pLDDT 스펙트럼 표시
+hide everything
+show cartoon, predicted
+
+# pLDDT 색상 (파랑=높음, 빨강=낮음)
+spectrum b, red_white_blue, predicted, minimum=0, maximum=100
+
+# 신뢰도 범위별 세분화
+select very_high, predicted and b > 90
+select high, predicted and b > 70 and b <= 90
+select medium, predicted and b > 50 and b <= 70
+select low, predicted and b <= 50
+
+color blue, very_high
+color cyan, high
+color yellow, medium
+color red, low
+
+# 신뢰도 낮은 영역 표시
+show sticks, low
+label low and name CA, "pLDDT=%4.1f" % b
+```
+
+#### AlphaFold3 복합체 ipTM 분석
+
+```python
+# AlphaFold3 복합체 (수용체 + 펩타이드)
+load fold_test1_model_0.pdb, complex
+
+# 체인별 pLDDT 확인
+spectrum b, red_white_blue, chain A   # 펩타이드
+spectrum b, red_white_blue, chain B   # 수용체
+
+# 인터페이스 잔기만 하이라이트
+select interface_A, chain A within 5 of chain B
+select interface_B, chain B within 5 of chain A
+show sticks, interface_A or interface_B
+
+# pLDDT가 높은 인터페이스 = 신뢰할 수 있는 접촉
+select confident_contacts, (interface_A or interface_B) and b > 70
+color green, confident_contacts
+```
+
+### 배치 렌더링 스크립트
+
+여러 PDB 파일을 자동으로 렌더링하여 비교 이미지를 생성합니다.
+
+#### Python 배치 스크립트
+
+```python
+#!/usr/bin/env python3
+"""batch_render.py -- 여러 PDB를 동일 뷰로 렌더링"""
+import glob
+import subprocess
+
+pdbs = sorted(glob.glob("results/sstr2_docking/arm3_denovo/esmfold_*.pdb"))
+
+for pdb in pdbs:
+    name = pdb.replace(".pdb", "")
+    cmd = f"""pymol -c -d "
+        load {pdb};
+        hide everything;
+        show cartoon;
+        spectrum b, red_white_blue, minimum=0, maximum=100;
+        orient;
+        set ray_opaque_background, 1;
+        bg_color white;
+        ray 1920, 1080;
+        png {name}.png, dpi=300;
+        quit
+    " """
+    subprocess.run(cmd, shell=True)
+```
+
+#### PML 배치 스크립트
+
+```python
+# batch_render.pml -- PyMOL 내부에서 실행
+import glob, os
+
+files = glob.glob("results/sstr2_docking/arm3_denovo/esmfold_*.pdb")
+for f in files:
+    name = os.path.basename(f).replace(".pdb", "")
+    cmd.load(f, name)
+    cmd.hide("everything", name)
+    cmd.show("cartoon", name)
+    cmd.spectrum("b", "red_white_blue", name, minimum=0, maximum=100)
+    cmd.orient(name)
+    cmd.ray(1920, 1080)
+    cmd.png(f"renders/{name}.png", dpi=300)
+    cmd.delete(name)
+```
+
+#### 비교 패널 (모든 포즈를 하나의 이미지로)
+
+```python
+# 모든 de novo 펩타이드를 한 뷰에 중첩
+import glob
+
+files = sorted(glob.glob("esmfold_bb*.pdb"))
+colors = ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta",
+          "salmon", "lime", "teal", "slate", "violet", "pink", "wheat", "olive"]
+
+for i, f in enumerate(files):
+    name = f"pep_{i}"
+    cmd.load(f, name)
+    cmd.show("cartoon", name)
+    cmd.color(colors[i % len(colors)], name)
+    if i > 0:
+        cmd.align(name, "pep_0")
+
+cmd.zoom("all", 5)
+cmd.bg_color("white")
+cmd.ray(2400, 1800)
+cmd.png("all_peptides_overlay.png", dpi=300)
+```
+
+### Electrostatic Surface (APBS 연동)
+
+바인딩 포켓의 정전기 표면을 계산하여 전하 분포를 분석합니다.
+
+```python
+# 1. PQR 파일 생성 (pdb2pqr 또는 PDB2PQR 웹서버)
+# bash: pdb2pqr --ff=AMBER sstr2_receptor.pdb sstr2_receptor.pqr
+
+# 2. APBS 실행
+# bash: apbs apbs_input.in
+# 출력: sstr2_receptor.dx (정전기 포텐셜 맵)
+
+# 3. PyMOL에서 로드 및 표시
+load sstr2_receptor.pdb, receptor
+load sstr2_receptor.dx, emap
+
+# 정전기 표면 색상 램프
+ramp_new eramp, emap, [-5, 0, 5], [red, white, blue]
+
+# 표면에 적용
+show surface, receptor
+set surface_color, eramp, receptor
+set transparency, 0.1, receptor
+
+# 리간드 포즈 위에 표면 표시
+show sticks, chain A
+zoom chain A, 10
+```
+
+#### PDB2PQR + APBS 자동화
+
+```bash
+#!/bin/bash
+# electrostatics.sh -- 정전기 맵 자동 생성
+PDB="sstr2_receptor.pdb"
+PQR="${PDB%.pdb}.pqr"
+DX="${PDB%.pdb}.dx"
+
+# PQR 생성
+pdb2pqr --ff=AMBER --apbs-input="apbs.in" "$PDB" "$PQR"
+
+# APBS 실행
+apbs apbs.in
+
+# PyMOL 시각화
+pymol -c -d "
+load $PDB;
+load $DX, emap;
+ramp_new eramp, emap, [-5,0,5], [red,white,blue];
+show surface;
+set surface_color, eramp;
+ray 1920, 1080;
+png electrostatic_surface.png;
+quit
+"
+```
+
+### 펩타이드-수용체 인터페이스 분석
+
+```python
+# 인터페이스 상호작용 종합 분석
+load sstr2_complex.pdb
+
+# 1. 수소결합 네트워크
+distance hbonds, chain A, chain B, mode=2
+set dash_color, yellow, hbonds
+
+# 2. 소수성 접촉
+select hydrophobic_A, chain A and resn ALA+VAL+LEU+ILE+PHE+TRP+MET+PRO
+select hydrophobic_B, chain B within 4 of hydrophobic_A
+show sticks, hydrophobic_A or hydrophobic_B
+color orange, hydrophobic_A
+color tv_orange, hydrophobic_B
+
+# 3. 염다리 (salt bridge)
+select pos_A, chain A and (resn LYS and name NZ) or (resn ARG and name NH1+NH2+NE)
+select neg_B, chain B and (resn ASP and name OD1+OD2) or (resn GLU and name OE1+OE2)
+distance salt_bridges, pos_A, neg_B, mode=0, cutoff=4.0
+set dash_color, cyan, salt_bridges
+set dash_width, 3.0
+
+# 4. 카이-파이 상호작용 (cation-pi)
+select cation_A, chain A and (resn LYS and name NZ) or (resn ARG and name CZ)
+select pi_B, chain B and resn PHE+TYR+TRP and name CG+CD1+CD2+CE1+CE2+CZ
+distance cation_pi, cation_A, pi_B, mode=0, cutoff=6.0
+set dash_color, magenta, cation_pi
+
+# 5. 접촉 면적 (Buried Surface Area)
+# PyMOL API
+from pymol import cmd
+cmd.get_area("chain A")                    # 총 SASA
+cmd.get_area("chain A and interface_A")    # 인터페이스 SASA
+
+# 6. 줌 + 렌더링
+zoom chain A, 8
+bg_color white
+ray 2400, 1800
+png interface_analysis.png, dpi=300
+```
+
+### PyMOL + Python API 자동화 예제
+
+```python
+#!/usr/bin/env python3
+"""
+analyze_docking_results.py
+DiffDock 결과를 자동 분석하여 이미지 + 보고서 생성
+"""
+from pymol import cmd
+import json
+import os
+
+def analyze_pose(receptor_pdb, ligand_sdf, output_dir, pose_name="pose"):
+    """단일 도킹 포즈 분석 및 이미지 생성"""
+    cmd.reinitialize()
+    cmd.load(receptor_pdb, "receptor")
+    cmd.load(ligand_sdf, "ligand")
+
+    # 기본 표현
+    cmd.hide("everything")
+    cmd.show("cartoon", "receptor")
+    cmd.color("gray80", "receptor")
+    cmd.show("sticks", "ligand")
+    cmd.util.cbay("ligand")
+
+    # 바인딩 사이트 표시
+    cmd.select("binding_site", "receptor within 5 of ligand")
+    cmd.show("sticks", "binding_site")
+    cmd.show("surface", "binding_site")
+    cmd.set("transparency", 0.6, "binding_site")
+
+    # 상호작용
+    cmd.distance("hbonds", "ligand", "binding_site", mode=2)
+
+    # 렌더링
+    cmd.zoom("ligand", 8)
+    cmd.bg_color("white")
+    cmd.ray(1920, 1080)
+    cmd.png(os.path.join(output_dir, f"{pose_name}.png"), dpi=300)
+
+    # 정보 수집
+    info = {
+        "name": pose_name,
+        "binding_residues": [],
+        "hbond_count": 0,
+    }
+
+    # 바인딩 잔기 목록
+    model = cmd.get_model("binding_site and name CA")
+    for atom in model.atom:
+        info["binding_residues"].append(f"{atom.chain}{atom.resi}({atom.resn})")
+
+    return info
+
+# 사용 예
+if __name__ == "__main__":
+    results = []
+    for i, sdf in enumerate(sorted(os.listdir("arm1_smallmol/"))):
+        if sdf.endswith(".sdf"):
+            info = analyze_pose(
+                "sstr2_receptor.pdb",
+                f"arm1_smallmol/{sdf}",
+                "renders/",
+                f"arm1_pose_{i}"
+            )
+            results.append(info)
+
+    with open("renders/analysis_report.json", "w") as f:
+        json.dump(results, f, indent=2)
+```
+
+---
+
 ## 참고 자료
 
 - **공식 문서**: https://pymol.org/dokuwiki/
 - **명령어 레퍼런스**: https://pymol.org/pymol-command-ref.html
 - **PyMOL Wiki**: https://pymolwiki.org/
 - **GitHub**: https://github.com/schrodinger/pymol-open-source
+- **APBS**: https://www.poissonboltzmann.org/
+- **PDB2PQR**: https://pdb2pqr.readthedocs.io/

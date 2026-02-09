@@ -383,9 +383,261 @@ VADDLVVPLDDD...
 
 ---
 
+## 펩타이드 리간드 설계 응용
+
+> 이 섹션은 SSTR2, PSMA, FAP 등 수용체 타겟에 대한 펩타이드 리간드 설계 과정에서 FoldMason을 활용하는 방법을 다룹니다.
+
+### 수용체 패밀리 구조 비교
+
+동일 수용체 패밀리(예: SSTR1~5)의 구조를 정렬하여 서브타입 선택성 결정 잔기를 식별합니다.
+
+```bash
+# SSTR 서브타입 5종의 AlphaFold 예측 구조 비교
+# PDB 파일: sstr1.pdb, sstr2.pdb, sstr3.pdb, sstr4.pdb, sstr5.pdb
+foldmason easy-msa \
+  sstr1.pdb sstr2.pdb sstr3.pdb sstr4.pdb sstr5.pdb \
+  results/sstr_family \
+  /tmp/sstr_family \
+  --report-mode 1 \
+  --refine-iters 100
+
+# 출력:
+#   results/sstr_family_aa.fa   -- 아미노산 정렬 (서브타입 간 보존/변이 잔기 확인)
+#   results/sstr_family_3di.fa  -- 3Di 정렬 (구조적 유사성 비교)
+#   results/sstr_family.html    -- 대화형 시각화
+#   results/sstr_family.nw      -- 가이드 트리 (서브타입 간 구조적 거리)
+```
+
+#### 보존 잔기 vs 변이 잔기 분석
+
+```python
+#!/usr/bin/env python3
+"""
+analyze_sstr_alignment.py
+SSTR 패밀리 MSA에서 서브타입 선택성 잔기 식별
+"""
+from Bio import AlignIO
+
+alignment = AlignIO.read("results/sstr_family_aa.fa", "fasta")
+
+# 각 컬럼의 보존도 계산
+for col_idx in range(alignment.get_alignment_length()):
+    column = alignment[:, col_idx]
+    residues = set(column.replace("-", ""))
+    conservation = 1.0 if len(residues) == 1 else 1.0 / len(residues)
+
+    # 완전 보존 (5/5 동일) = 코어 바인딩 잔기
+    if len(residues) == 1 and "-" not in column:
+        print(f"Column {col_idx}: CONSERVED ({column[0]})")
+    # SSTR2에서만 다른 잔기 = 선택성 결정 잔기
+    elif len(residues) == 2:
+        sstr2_res = column[1]  # 두 번째 = SSTR2
+        others = set(column) - {sstr2_res, "-"}
+        if others:
+            print(f"Column {col_idx}: SSTR2-specific ({sstr2_res} vs {others})")
+```
+
+#### 활용 시나리오
+
+| 시나리오 | FoldMason 활용 | 목적 |
+|---------|---------------|------|
+| SSTR2 선택적 펩타이드 설계 | SSTR1-5 정렬 → 변이 잔기 식별 | SSTR2에만 결합하는 펩타이드 |
+| PSMA 표적 방사성의약품 | PSMA vs GCPII vs NAALADase 정렬 | off-target 최소화 |
+| FAP 저해제 | FAP vs DPP4 vs DPP8/9 정렬 | 선택성 확보 |
+| 범용 SSTR 작용제 | SSTR1-5 보존 잔기 분석 | 보존된 포켓 타겟 |
+
+### GPCR 패밀리 바인딩 포켓 정렬
+
+GPCR 수용체들의 바인딩 포켓만 추출하여 정렬합니다.
+
+```bash
+# 1. 바인딩 포켓 잔기만 추출 (PyMOL 또는 Biopython 사용)
+# 각 GPCR의 리간드 결합 부위 5Å 이내 잔기만 PDB로 저장
+
+# 2. 포켓 구조끼리 정렬
+foldmason easy-msa \
+  pocket_sstr2.pdb pocket_cxcr4.pdb pocket_mu_opioid.pdb \
+  results/gpcr_pockets \
+  /tmp/gpcr_pockets \
+  --report-mode 1
+
+# 3. 결과 분석
+# - 보존된 포켓 잔기 = GPCR 공통 약물 타겟
+# - 변이 잔기 = 서브타입 선택성 결정
+# - 3Di 정렬 = 서열이 달라도 구조적으로 동등한 위치 발견
+```
+
+### AlphaFold 모델 품질 관리 (QC)
+
+AlphaFold3가 생성한 여러 모델의 구조적 일관성을 평가합니다.
+
+```bash
+# 5개 AlphaFold3 모델의 일관성 평가
+foldmason easy-msa \
+  fold_test1_model_0.pdb \
+  fold_test1_model_1.pdb \
+  fold_test1_model_2.pdb \
+  fold_test1_model_3.pdb \
+  fold_test1_model_4.pdb \
+  results/af3_qc \
+  /tmp/af3_qc \
+  --report-mode 1 \
+  --refine-iters 50
+
+# lDDT 해석:
+# > 0.8: 높은 일관성 → 구조 신뢰
+# 0.5-0.8: 중간 → 유동 영역 존재
+# < 0.5: 낮은 일관성 → 해당 영역 주의
+```
+
+#### 잔기별 lDDT 추출
+
+```bash
+# 잔기별 lDDT 점수 추출 (바인딩 포켓 잔기의 신뢰도 평가)
+foldmason createdb fold_test1_model_*.pdb af3_db
+foldmason msa2lddt af3_db results/af3_qc_aa.fa
+
+# 출력: 각 컬럼(잔기 위치)의 lDDT 점수
+# 바인딩 포켓 잔기(B122, B127, B184, B197 등)의 lDDT가 높으면
+# → 해당 영역의 구조가 모델 간 일관되어 도킹에 적합
+```
+
+### 구조-서열 공진화 분석
+
+3Di(구조 알파벳) + AA(아미노산) 정렬을 함께 활용하여 잔기 커플링을 분석합니다.
+
+```python
+#!/usr/bin/env python3
+"""
+coevolution_3di_aa.py
+3Di + AA 공동 정렬에서 구조적으로 커플링된 잔기 쌍 식별
+"""
+from Bio import AlignIO
+
+aa_aln = AlignIO.read("results/sstr_family_aa.fa", "fasta")
+di_aln = AlignIO.read("results/sstr_family_3di.fa", "fasta")
+
+length = aa_aln.get_alignment_length()
+n_seqs = len(aa_aln)
+
+def column_entropy(column):
+    """Shannon entropy of a column"""
+    from collections import Counter
+    import math
+    counts = Counter(c for c in column if c != "-")
+    total = sum(counts.values())
+    if total == 0:
+        return 0
+    return -sum((n/total) * math.log2(n/total) for n in counts.values())
+
+# 구조(3Di)는 보존되지만 서열(AA)은 변이하는 위치 찾기
+# = 구조적 역할은 유지하면서 다른 아미노산으로 대체 가능한 위치
+for i in range(length):
+    aa_col = aa_aln[:, i]
+    di_col = di_aln[:, i]
+
+    aa_ent = column_entropy(aa_col)
+    di_ent = column_entropy(di_col)
+
+    # 3Di 보존 (entropy < 0.5) + AA 변이 (entropy > 1.0)
+    if di_ent < 0.5 and aa_ent > 1.0:
+        print(f"Position {i}: Structurally conserved but sequence-variable")
+        print(f"  AA: {aa_col}  (H={aa_ent:.2f})")
+        print(f"  3Di: {di_col}  (H={di_ent:.2f})")
+        print(f"  → 이 위치는 펩타이드 설계에서 치환 가능")
+```
+
+### 대규모 도킹 포즈 클러스터링
+
+수천 개의 도킹 결과를 구조적으로 클러스터링하여 대표 포즈를 선별합니다.
+
+```bash
+# 1. 모든 도킹 포즈를 하나의 디렉토리에 수집
+# arm1_smallmol/: DiffDock 포즈
+# arm3_denovo/: ESMFold 구조
+mkdir all_poses
+cp results/sstr2_docking/arm1_smallmol/*.sdf all_poses/
+cp results/sstr2_docking/arm3_denovo/esmfold_*.pdb all_poses/
+
+# 2. FoldMason으로 구조 클러스터링 (대규모 입력 시 --precluster 사용)
+foldmason easy-msa \
+  all_poses/*.pdb \
+  results/pose_clusters \
+  /tmp/pose_clusters \
+  --precluster \
+  --fast \
+  --threads 8 \
+  --report-mode 1
+
+# 3. 가이드 트리(Newick) 분석
+# 트리에서 가까운 구조 = 유사한 바인딩 모드
+# 트리의 주요 클레이드 = 대표적 바인딩 모드 그룹
+
+# 4. 클러스터별 대표 구조 선별
+# lDDT 기반으로 클러스터 내 가장 일관된 포즈를 대표로 선택
+```
+
+#### Newick 트리 파싱
+
+```python
+#!/usr/bin/env python3
+"""
+parse_pose_tree.py
+FoldMason 가이드 트리에서 포즈 클러스터 식별
+"""
+from Bio import Phylo
+from io import StringIO
+
+# Newick 트리 로드
+tree_str = open("results/pose_clusters.nw").read()
+tree = Phylo.read(StringIO(tree_str), "newick")
+
+# 클레이드(클러스터) 추출
+clusters = []
+for clade in tree.find_clades(order="level"):
+    terminals = clade.get_terminals()
+    if 2 <= len(terminals) <= 10:  # 중간 크기 클러스터
+        names = [t.name for t in terminals]
+        # 클러스터 내 거리 = 구조적 유사도
+        avg_dist = sum(tree.distance(t) for t in terminals) / len(terminals)
+        clusters.append({
+            "members": names,
+            "size": len(names),
+            "avg_distance": avg_dist,
+        })
+        print(f"Cluster ({len(names)} members, dist={avg_dist:.3f}):")
+        for n in names:
+            print(f"  - {n}")
+
+# 상위 5 클러스터의 대표 구조 선택 (가장 중심에 가까운 것)
+clusters.sort(key=lambda c: c["avg_distance"])
+for c in clusters[:5]:
+    print(f"\nRepresentative from cluster: {c['members'][0]}")
+```
+
+### Foldseek 연동
+
+FoldMason의 기반 기술인 Foldseek을 활용하여 구조 검색을 수행합니다.
+
+```bash
+# Foldseek으로 구조 유사 수용체 검색 (PDB/AlphaFold DB)
+foldseek easy-search \
+  sstr2_receptor.pdb \
+  /path/to/pdb_database \
+  results/sstr2_homologs.m8 \
+  /tmp/foldseek \
+  --format-mode 4
+
+# 결과에서 상위 히트의 PDB 추출 후 FoldMason으로 정렬
+# → SSTR2와 구조적으로 유사한 수용체들의 바인딩 포켓 보존 분석
+```
+
+---
+
 ## 참고 자료
 
 - **GitHub**: https://github.com/steineggerlab/foldmason
 - **논문**: Gilchrist et al. Science (2026)
 - **웹서버**: https://search.foldseek.com/foldmason
 - **Foldseek**: https://github.com/steineggerlab/foldseek
+- **3Di 알파벳 논문**: van Kempen et al. Nature Biotechnology (2024)
