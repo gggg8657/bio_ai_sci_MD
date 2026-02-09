@@ -34,3 +34,10 @@ Thumbs.db
 
 # Environment-specific (don't commit local prefix)
 *.local.yml
+
+# Secrets / API keys
+*.key
+.env
+bionemo/.env
+molmim.key
+ngc.key
