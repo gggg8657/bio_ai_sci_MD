@@ -34,7 +34,7 @@ def main():
     if len(sys.argv) >= 2:
         input_dir = Path(sys.argv[1])
     else:
-        input_dir = repo_root / "fold_test1 (1)"
+        input_dir = repo_root / "data" / "fold_test1"
     if len(sys.argv) >= 3:
         output_dir = Path(sys.argv[2])
     else:
