@@ -12,6 +12,7 @@ GPU 불필요 -- HTTP 요청만 보냄.
 
 import os
 import json
+import requests
 from typing import Optional
 
 try:
