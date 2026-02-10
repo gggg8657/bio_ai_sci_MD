@@ -13,9 +13,14 @@ Arm 3: SSTR2 De Novo 펩타이드 바인더 설계
 import json
 from datetime import datetime
 from pathlib import Path
-from rfdiffusion_client import get_client as get_rfdiffusion
-from proteinmpnn_client import get_client as get_proteinmpnn
-from esmfold_client import get_client as get_esmfold
+try:
+    from .rfdiffusion_client import get_client as get_rfdiffusion
+    from .proteinmpnn_client import get_client as get_proteinmpnn
+    from .esmfold_client import get_client as get_esmfold
+except ImportError:
+    from rfdiffusion_client import get_client as get_rfdiffusion
+    from proteinmpnn_client import get_client as get_proteinmpnn
+    from esmfold_client import get_client as get_esmfold
 
 PROJECT_ROOT = Path(__file__).parent.parent
 RECEPTOR_PDB = PROJECT_ROOT / "results" / "sstr2_docking" / "sstr2_receptor.pdb"

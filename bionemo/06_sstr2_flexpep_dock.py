@@ -17,27 +17,31 @@ PROJECT_ROOT = Path(__file__).parent.parent
 COMPLEX_PDB = PROJECT_ROOT / "data" / "fold_test1" / "fold_test1_model_0.pdb"
 OUTPUT_DIR = PROJECT_ROOT / "results" / "sstr2_docking" / "arm2_flexpep"
 
-# Somatostatin-14 야생형: AGCKNFFWKTFTSC
+# Somatostatin-14 야생형: AGCKNFFWKTFTSC (UniProt P61278)
+# 활성 약효단(pharmacophore): Phe7-Trp8-Lys9-Thr10 (1-indexed)
 WILDTYPE = "AGCKNFFWKTFTSC"
 
 # 변이체 라이브러리
 VARIANTS = {
     "wildtype":     WILDTYPE,
-    # Alanine scanning (핵심 잔기)
+    # Alanine scanning (핵심 약효단 잔기)
     "F6A":          "AGCKNAFWKTFTSC",
     "F7A":          "AGCKNFAWKTFTSC",
     "W8A":          "AGCKNFFAKTFTSC",
     "K9A":          "AGCKNFFWATFTSC",
     "T10A":         "AGCKNFFWKAFTSC",
     "F11A":         "AGCKNFFWKTATSC",
-    # 알려진 유사체
-    "octreotide_core": "FCFWKTCT",
-    # 강화 변이체 (핵심 잔기 보존, 나머지 최적화)
+    # Octreotide 유래 서열
+    # 실제 Octreotide: D-Phe-Cys-Phe-D-Trp-Lys-Thr-Cys-Thr(ol)
+    # 환형 (Cys2-Cys7 이황화결합), D-아미노산(pos 1,4)은 L로 근사
+    # 선형 표현이므로 FlexPepDock에서 disulfide constraint 별도 필요
+    "octreotide_linear": "FCFWKTCT",
+    # 강화 변이체 (핵심 약효단 보존, 나머지 최적화)
     "enhanced_1":   "SGCKNFFWKTFTSC",  # A1S
-    "enhanced_2":   "AGCRNFFWKTFTSC",  # K4R
-    "enhanced_3":   "AGCKNYFWKTFTSC",  # F6Y
-    "enhanced_4":   "AGCKNFFWRTFTSC",  # K9R
-    "enhanced_5":   "AGCKNFFWKTYTSC",  # F11Y
+    "enhanced_2":   "AGCRNFFWKTFTSC",  # K4R (Lys→Arg, 양전하 보존)
+    "enhanced_3":   "AGCKNYFWKTFTSC",  # F6Y (Phe→Tyr, 수소결합 추가)
+    "enhanced_4":   "AGCKNFFWRTFTSC",  # K9R (Lys→Arg, 양전하 보존)
+    "enhanced_5":   "AGCKNFFWKTYTSC",  # F11Y (Phe→Tyr, 수소결합 추가)
 }
 
 

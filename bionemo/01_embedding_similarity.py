@@ -12,7 +12,10 @@ embedding 대신 generate 기반 분석을 수행합니다.
     python 01_embedding_similarity.py
 """
 
-from molmim_client import get_client
+try:
+    from .molmim_client import get_client
+except ImportError:
+    from molmim_client import get_client
 
 
 def main():

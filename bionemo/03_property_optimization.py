@@ -17,7 +17,10 @@ import argparse
 import json
 from datetime import datetime
 from pathlib import Path
-from molmim_client import get_client
+try:
+    from .molmim_client import get_client
+except ImportError:
+    from molmim_client import get_client
 
 
 def main():

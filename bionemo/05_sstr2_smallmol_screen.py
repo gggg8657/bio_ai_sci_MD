@@ -14,20 +14,45 @@ Arm 1: SSTR2 소분자 스크리닝 파이프라인
 import json
 from datetime import datetime
 from pathlib import Path
-from molmim_client import get_client as get_molmim
-from diffdock_client import get_client as get_diffdock
+try:
+    from .molmim_client import get_client as get_molmim
+    from .diffdock_client import get_client as get_diffdock
+except ImportError:
+    from molmim_client import get_client as get_molmim
+    from diffdock_client import get_client as get_diffdock
 
 PROJECT_ROOT = Path(__file__).parent.parent
 RECEPTOR_PDB = PROJECT_ROOT / "results" / "sstr2_docking" / "sstr2_receptor.pdb"
 OUTPUT_DIR = PROJECT_ROOT / "results" / "sstr2_docking" / "arm1_smallmol"
 
-# 기존 SSTR2 소분자 리간드 시드 (문헌 기반)
+# 기존 SSTR2 소분자 리간드 시드 (PubChem / ChEMBL 검증)
 SEED_MOLECULES = {
-    # Octreotide 핵심 약효단의 소분자 유사체 / 알려진 SSTR2 활성 분자
-    "Paltusotine_core": "CC1=CC(=CC(=C1)OCC2=CC=NC=C2)C(=O)NC3CCCCC3",
-    "SSTR2_agonist_1": "c1ccc2c(c1)c(=O)n(c(=O)[nH]2)CC(=O)O",
-    "Indole_scaffold": "c1ccc2c(c1)[nH]cc2CC(=O)NC",
-    "Benzimidazole_hit": "c1ccc2[nH]c(nc2c1)CCNC(=O)c1ccccc1",
+    # Paltusotine (CRN00808) - FDA 승인 경구 SSTR2 작용제
+    # PubChem CID 134168328, C27H22F2N4O
+    "Paltusotine": (
+        "C1CN(CCC1N)C2=C3C=C(C=CC3=NC=C2C4=CC(=CC(=C4)F)F)"
+        "C5=CC=CC(=C5O)C#N"
+    ),
+    # L-054522 - Merck 비펩타이드 SSTR2 작용제
+    # PubChem CID 15965425, C35H47N7O5
+    "L054522": (
+        "CC(C1=CNC2=CC=CC=C21)C(C(=O)NC(CCCCN)C(=O)OC(C)(C)C)"
+        "NC(=O)N3CCC(CC3)N4C5=CC=CC=C5NC4=O"
+    ),
+    # Pasireotide (SOM-230) 코어 - 다중 SST 수용체 작용제 (SSTR2 포함)
+    # PubChem CID 9941444, C58H66N10O9
+    "Pasireotide": (
+        "C1C(CN2C1C(=O)NC(C(=O)NC(C(=O)NC(C(=O)NC(C(=O)NC(C2=O)"
+        "CC3=CC=CC=C3)CC4=CC=C(C=C4)OCC5=CC=CC=C5)CCCCN)"
+        "CC6=CNC7=CC=CC=C76)C8=CC=CC=C8)OC(=O)NCCN"
+    ),
+    # Octreotide - 환형 소마토스타틴 유사체 (Cys2-Cys7 이황화결합)
+    # PubChem CID 448601, C49H66N10O10S2
+    "Octreotide": (
+        "CC(C1C(=O)NC(CSSCC(C(=O)NC(C(=O)NC(C(=O)NC(C(=O)N1)"
+        "CCCCN)CC2=CNC3=CC=CC=C32)CC4=CC=CC=C4)NC(=O)C(CC5=CC=CC=C5)N)"
+        "C(=O)NC(CO)C(C)O)O"
+    ),
 }
 
 
