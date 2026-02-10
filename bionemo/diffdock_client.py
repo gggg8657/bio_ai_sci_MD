@@ -14,7 +14,10 @@ import json
 import tempfile
 from pathlib import Path
 from typing import Optional
-from api_base import NVIDIABaseClient
+try:
+    from .api_base import NVIDIABaseClient
+except ImportError:
+    from api_base import NVIDIABaseClient
 
 try:
     from rdkit import Chem

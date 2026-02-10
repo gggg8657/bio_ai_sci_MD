@@ -13,73 +13,32 @@ GPU 불필요 -- HTTP 요청만 보냄.
 import os
 import json
 import requests
-from pathlib import Path
 from typing import Optional
 
+try:
+    from .api_base import NVIDIABaseClient
+except ImportError:
+    from api_base import NVIDIABaseClient
 
-class MolMIMClient:
+
+class MolMIMClient(NVIDIABaseClient):
     """MolMIM NIM API 클라이언트 (5개 엔드포인트 지원)"""
 
     # NVIDIA 호스팅 API 기본 URL
-    DEFAULT_BASE_URL = "https://health.api.nvidia.com/v1/biology/nvidia/molmim"
+    BASE_URL = "https://health.api.nvidia.com/v1/biology/nvidia/molmim"
 
     def __init__(
         self,
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
     ):
-        self.api_key = api_key or self._load_api_key()
-        self.base_url = (base_url or os.getenv("MOLMIM_BASE_URL", self.DEFAULT_BASE_URL)).rstrip("/")
-        self.headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
-        if self.api_key:
-            self.headers["Authorization"] = f"Bearer {self.api_key}"
+        # MOLMIM_BASE_URL 환경변수를 우선 적용
+        effective_url = base_url or os.getenv("MOLMIM_BASE_URL")
+        super().__init__(api_key=api_key, base_url=effective_url)
 
-    @staticmethod
-    def _load_api_key() -> str:
-        """환경변수 → .env → ngc.key 순서로 API 키 탐색"""
-        # 1. 환경변수
-        key = os.getenv("NGC_CLI_API_KEY")
-        if key:
-            return key
-
-        # 2. .env 파일
-        env_path = Path(__file__).parent / ".env"
-        if env_path.exists():
-            for line in env_path.read_text().splitlines():
-                line = line.strip()
-                if line.startswith("NGC_CLI_API_KEY=") and not line.startswith("#"):
-                    val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                    if val and val != "your-ngc-api-key-here":
-                        return val
-
-        # 3. molmim.key 또는 ngc.key 파일 (프로젝트 루트)
-        for search in [Path(__file__).parent.parent, Path.cwd()]:
-            for name in ["molmim.key", "ngc.key"]:
-                key_file = search / name
-                if key_file.exists():
-                    val = key_file.read_text().strip()
-                    if val:
-                        return val
-
-        raise ValueError(
-            "NGC API 키를 찾을 수 없습니다.\n"
-            "방법 1: 환경변수 NGC_CLI_API_KEY 설정\n"
-            "방법 2: bionemo/.env 파일에 NGC_CLI_API_KEY=xxx 작성\n"
-            "방법 3: 프로젝트 루트에 ngc.key 파일 생성"
-        )
-
-    def _post(self, endpoint: str, payload: dict) -> dict:
-        """API POST 요청"""
-        url = f"{self.base_url}/{endpoint}"
-        resp = requests.post(url, headers=self.headers, json=payload, timeout=120)
-        if resp.status_code != 200:
-            raise RuntimeError(
-                f"MolMIM API 오류 [{resp.status_code}]: {resp.text[:500]}"
-            )
-        data = resp.json()
+    def _post(self, endpoint: str, payload: dict, timeout: int = 120) -> dict:
+        """API POST 요청 (molecules JSON 문자열 자동 파싱 추가)"""
+        data = super()._post(endpoint, payload, timeout=timeout)
         # 호스팅 API는 molecules 필드에 JSON 문자열을 반환하는 경우가 있음
         if isinstance(data.get("molecules"), str):
             data["molecules"] = json.loads(data["molecules"])

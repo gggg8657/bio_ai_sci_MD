@@ -1,17 +1,19 @@
 #!/bin/bash
 # Test MolMIM hosted API with molmim.key (nvapi- format)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 source ~/miniconda3/etc/profile.d/conda.sh 2>/dev/null
 conda activate bio-tools 2>/dev/null
 
 # molmim.key 우선, 없으면 ngc.key
-if [ -f /mnt/g/repos/bio/molmim.key ]; then
-  API_KEY=$(cat /mnt/g/repos/bio/molmim.key)
+if [ -f "$REPO_ROOT/molmim.key" ]; then
+  API_KEY=$(cat "$REPO_ROOT/molmim.key")
   echo "Using: molmim.key"
-elif [ -f /mnt/g/repos/bio/ngc.key ]; then
-  API_KEY=$(cat /mnt/g/repos/bio/ngc.key)
+elif [ -f "$REPO_ROOT/ngc.key" ]; then
+  API_KEY=$(cat "$REPO_ROOT/ngc.key")
   echo "Using: ngc.key"
 else
-  echo "ERROR: No key file found"
+  echo "ERROR: No key file found in $REPO_ROOT"
   exit 1
 fi
 echo "Key prefix: ${API_KEY:0:10}..."

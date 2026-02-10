@@ -1,5 +1,5 @@
 {
-  "pdb_source": "/mnt/g/repos/bio/data/fold_test1/fold_test1_model_0.pdb",
+  "pdb_source": "../../data/fold_test1/fold_test1_model_0.pdb",
   "ligand_chain": "A",
   "receptor_chain": "B",
   "cutoff_angstrom": 5.0,
@@ -218,7 +218,7 @@
     "B298",
     "B302"
   ],
-  "receptor_pdb": "/mnt/g/repos/bio/results/sstr2_docking/sstr2_receptor.pdb",
+  "receptor_pdb": "./sstr2_receptor.pdb",
   "rfdiffusion": {
     "contigs": "B1-369/0 10-30",
     "hotspot_res": [

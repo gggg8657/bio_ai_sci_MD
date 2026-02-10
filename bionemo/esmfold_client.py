@@ -11,7 +11,10 @@ NVIDIA 호스팅 API를 통한 단백질 구조 예측 (MSA 불필요).
 
 from pathlib import Path
 from typing import Optional
-from api_base import NVIDIABaseClient
+try:
+    from .api_base import NVIDIABaseClient
+except ImportError:
+    from api_base import NVIDIABaseClient
 
 
 class ESMFoldClient(NVIDIABaseClient):

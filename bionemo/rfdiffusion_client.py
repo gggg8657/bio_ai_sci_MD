@@ -11,7 +11,10 @@ NVIDIA 호스팅 API를 통한 de novo 단백질/펩타이드 바인더 설계.
 
 from pathlib import Path
 from typing import Optional
-from api_base import NVIDIABaseClient
+try:
+    from .api_base import NVIDIABaseClient
+except ImportError:
+    from api_base import NVIDIABaseClient
 
 
 class RFdiffusionClient(NVIDIABaseClient):

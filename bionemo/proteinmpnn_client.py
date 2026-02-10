@@ -11,7 +11,10 @@ NVIDIA 호스팅 API를 통한 역접힘(inverse folding) -- 백본 구조 → �
 
 from pathlib import Path
 from typing import Optional
-from api_base import NVIDIABaseClient
+try:
+    from .api_base import NVIDIABaseClient
+except ImportError:
+    from api_base import NVIDIABaseClient
 
 
 class ProteinMPNNClient(NVIDIABaseClient):
