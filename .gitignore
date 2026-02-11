@@ -33,7 +33,6 @@ Thumbs.db
 .ipynb_checkpoints/
 
 # Generated PDB artifacts (reproducible from pipeline)
-notebooks/candidates/
 notebooks/refined/
 notebooks/pymol_snapshots/
 notebooks/standardized_raw.pdb
