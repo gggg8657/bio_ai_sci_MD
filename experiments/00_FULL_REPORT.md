@@ -142,14 +142,14 @@ Somatostatin(Chain A) 기준 **5A** 이내 SSTR2(Chain B) 잔기를 Biopython Ne
 
 ### 5.1 시드 분자
 
-문헌 기반 SSTR2 관련 소분자 scaffold 4종:
+PubChem/ChEMBL 검증된 실제 SSTR2 리간드 4종 (코드: `05_sstr2_smallmol_screen.py`):
 
-| 시드 | SMILES | 근거 |
-|------|--------|------|
-| Paltusotine_core | `CC1=CC(=CC(=C1)OCC2=CC=NC=C2)C(=O)NC3CCCCC3` | SSTR2 소분자 작용제 |
-| SSTR2_agonist_1 | `c1ccc2c(c1)c(=O)n(c(=O)[nH]2)CC(=O)O` | Quinazolinedione scaffold |
-| Indole_scaffold | `c1ccc2c(c1)[nH]cc2CC(=O)NC` | 인돌 기반 scaffold |
-| Benzimidazole_hit | `c1ccc2[nH]c(nc2c1)CCNC(=O)c1ccccc1` | 벤즈이미다졸 scaffold |
+| 시드 | PubChem CID | 분자식 | 근거 |
+|------|------------|--------|------|
+| Paltusotine (CRN00808) | 134168328 | C27H22F2N4O | FDA 승인 경구 SSTR2 작용제 |
+| L-054522 | 15965425 | C35H47N7O5 | Merck 비펩타이드 SSTR2 작용제 |
+| Pasireotide (SOM-230) | 9941444 | C58H66N10O9 | 다중 SST 수용체 작용제 (SSTR2 포함) |
+| Octreotide | 448601 | C49H66N10O10S2 | 환형 소마토스타틴 유사체 (Cys2-Cys7 이황화결합) |
 
 ### 5.2 MolMIM 후보 생성
 

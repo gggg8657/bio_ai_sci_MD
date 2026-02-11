@@ -126,7 +126,7 @@ jobs:
           import glob, sys
           from Bio.PDB import PDBParser
           parser = PDBParser(QUIET=True)
-          pdb_files = glob.glob('data/**/*.pdb', recursive=True) + glob.glob('results/**/*.pdb', recursive=True)
+          pdb_files = glob.glob('data/**/*.pdb', recursive=True) + glob.glob('results/**/*.pdb', recursive=True) + glob.glob('notebooks/**/*.pdb', recursive=True)
           if not pdb_files:
               print('No PDB files found - skipping')
               sys.exit(0)
