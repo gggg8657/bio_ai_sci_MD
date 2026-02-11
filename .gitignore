@@ -32,6 +32,16 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
+# Generated PDB artifacts (reproducible from pipeline)
+notebooks/candidates/
+notebooks/refined/
+notebooks/pymol_snapshots/
+notebooks/standardized_raw.pdb
+notebooks/standardized_relaxed.pdb
+notebooks/__tmp_*.pdb
+notebooks/3d_views/
+data/fold_test1/*_from_cif.pdb
+
 # Environment-specific (don't commit local prefix)
 *.local.yml
 
