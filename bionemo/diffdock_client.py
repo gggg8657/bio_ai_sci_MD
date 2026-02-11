@@ -10,7 +10,7 @@ NVIDIA 호스팅 API를 통한 분자 도킹.
     poses = client.dock_smiles("sstr2.pdb", "CCO")
 """
 
-import json
+import os
 import tempfile
 from pathlib import Path
 from typing import Optional
@@ -101,10 +101,17 @@ class DiffDockClient(NVIDIABaseClient):
         AllChem.MMFFOptimizeMolecule(mol)
 
         with tempfile.NamedTemporaryFile(suffix=".sdf", mode="w", delete=False) as f:
-            writer = Chem.SDWriter(f.name)
+            tmp_path = f.name
+        try:
+            writer = Chem.SDWriter(tmp_path)
             writer.write(mol)
             writer.close()
-            return Path(f.name).read_text()
+            return Path(tmp_path).read_text()
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
 
     def dock_multiple_smiles(
         self,

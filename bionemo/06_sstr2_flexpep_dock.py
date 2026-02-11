@@ -57,11 +57,15 @@ def run_arm2():
 
     results = []
 
-    # PyRosetta FlexPepDock은 별도 환경 설정 필요 (Rosetta DB 초기화 이슈)
-    # 현재는 변이체 분석 모드로 실행하고, FlexPepDock은 추후 환경 정비 후 수행
+    # PyRosetta FlexPepDock: 런타임에 import 시도
     HAS_PYROSETTA = False
-    print("변이체 서열 분석 모드로 실행합니다.")
-    print("(FlexPepDock 실행은 PyRosetta DB 초기화 이슈 해결 후 가능)")
+    try:
+        import pyrosetta  # noqa: F401
+        HAS_PYROSETTA = True
+        print("PyRosetta 감지됨 — FlexPepDock 모드로 실행합니다.")
+    except ImportError:
+        print("PyRosetta 미설치 — 변이체 서열 분석 모드로 실행합니다.")
+        print("(FlexPepDock 실행은 PyRosetta 설치 후 가능)")
 
     if HAS_PYROSETTA:
         from pyrosetta import pose_from_pdb

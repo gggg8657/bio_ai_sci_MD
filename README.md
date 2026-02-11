@@ -96,6 +96,16 @@ SSTR2(Somatostatin Receptor Type 2)에 대해 기존 리간드(Somatostatin-14)�
 | 1 | 소분자 (MolMIM + DiffDock) | 40 (15 도킹) | QED=0.94, confidence=-3.0 | 완료 |
 | 2 | 펩타이드 변이체 | 13 | Ala scan + 강화 변이체 | 분석 완료 |
 | 3 | De Novo (RFdiff + MPNN + ESMFold) | 16 | pLDDT=81.4 (최고) | 완료 |
+| **통합** | **FastDesign + De Novo 통합 파이프라인** | **20** | **가중합 스코어 랭킹** | **완료** |
+
+### 노트북
+
+| 노트북 | 설명 |
+|--------|------|
+| [`SSTR2_SST14_demo.ipynb`](notebooks/SSTR2_SST14_demo.ipynb) | FastDesign 기반 펩타이드 서열 최적화 (py3Dmol 3D 뷰어 포함) |
+| [`demo_sstr2_virtual_screening.ipynb`](notebooks/demo_sstr2_virtual_screening.ipynb) | 3-Arm 가상 스크리닝 결과 시각화 |
+| [`unified_sstr2_binder_discovery.ipynb`](notebooks/unified_sstr2_binder_discovery.ipynb) | FastDesign + De Novo 통합 파이프라인 |
+| [`presentation_sstr2_pipeline.ipynb`](notebooks/presentation_sstr2_pipeline.ipynb) | 발표용 결과 대시보드 |
 
 > 상세 보고서: [experiments/00_FULL_REPORT.md](experiments/00_FULL_REPORT.md)
 
@@ -174,6 +184,15 @@ PRST_N_FM/
 │       ├── msas/                   # MSA (paired/unpaired)
 │       └── templates/              # 템플릿 구조
 │
+├── notebooks/                      # Jupyter 노트북 & 실험 결과
+│   ├── SSTR2_SST14_demo.ipynb     # FastDesign 펩타이드 최적화 (메인)
+│   ├── demo_sstr2_virtual_screening.ipynb  # 3-Arm 결과 시각화
+│   ├── unified_sstr2_binder_discovery.ipynb # 통합 파이프라인
+│   ├── presentation_sstr2_pipeline.ipynb   # 발표용 대시보드
+│   ├── candidates/                # FastDesign 후보 PDB (최신 실행)
+│   ├── candidates_all_not_passed/ # 검증 실패 후보 PDB
+│   └── candidates_all_same_fault/ # 동일 결함 후보 PDB
+│
 ├── results/
 │   ├── foldmason/                  # FoldMason 결과
 │   │   ├── result_foldmason.html   # 대화형 MSA 뷰어
@@ -199,10 +218,15 @@ PRST_N_FM/
 │   └── (23개 스크립트 -- 아래 표 참고)
 │
 └── docs/                           # 참조 문서
+    ├── BIONEMO_REFERENCE.md        # BioNeMo/NVIDIA NIM 가이드
     ├── FOLDMASON_REFERENCE.md
     ├── PYMOL_REFERENCE.md
+    ├── PYROSETTA_REFERENCE.md
     ├── ENV_COMPATIBILITY.md
     ├── PDB_VISUALIZATION_TOOLS.md
+    ├── pipeline_comparison.md      # 4가지 파이프라인 비교 분석
+    ├── sstr2_demo_version_comparison.md  # 데모 노트북 버전 비교
+    ├── sstr2_scientific_comparison.md    # 과학적 비교 분석
     └── pipeline_orchestration.svg
 ```
 
@@ -257,7 +281,13 @@ PRST_N_FM/
 
 ## 참고 문서
 
+### 실험 보고서
 - [전체 실험 보고서](experiments/00_FULL_REPORT.md)
+- [파이프라인 비교 분석](docs/pipeline_comparison.md) -- 4가지 파이프라인 설계 철학/입출력/스코어링 비교
+- [데모 노트북 버전 비교](docs/sstr2_demo_version_comparison.md) -- V1 vs V2 구조/의존성/출력 비교
+- [과학적 비교 분석](docs/sstr2_scientific_comparison.md)
+
+### 도구 레퍼런스
 - [BioNeMo / NVIDIA NIM 완전 가이드](docs/BIONEMO_REFERENCE.md) -- 13개 AI 모델 + 응용 워크플로우
 - [BioNeMo 모듈 가이드](bionemo/README.md) -- API 클라이언트 코드 사용법
 - [PyRosetta 완전 가이드](docs/PYROSETTA_REFERENCE.md) -- 14개 기능 + 펩타이드 설계

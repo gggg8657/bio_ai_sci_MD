@@ -3,7 +3,7 @@
 > **프로젝트**: PRST_N_FM (PyRosetta + FoldMason + BioNeMo)
 > **목표**: SSTR2 (Somatostatin Receptor Type 2)에 대해 기존 리간드(Somatostatin)보다 더 강하거나 오래 결합하는 분자 탐색
 > **환경**: Ubuntu 22.04 (WSL2), Conda `bio-tools`, NVIDIA NIM API (GPU 불필요)
-> **날짜**: 2026-02-09 ~ 2026-02-10
+> **날짜**: 2026-02-09 ~ 2026-02-11
 
 ---
 
@@ -274,34 +274,103 @@ bb03 유래 서열(1, 2위)에서 공통 모티프 발견:
 
 ---
 
-## 8. 결과 비교 요약
+## 8. FastDesign 펩타이드 서열 최적화 (V1 통합 노트북)
+
+**노트북**: `notebooks/SSTR2_SST14_demo.ipynb`
+
+### 8.1 개요
+
+PyRosetta FastDesign을 사용하여 Somatostatin-14 (`AGCKNFFWKTFTSC`) 기반 펩타이드 서열 최적화를 수행. 디설파이드 결합(Cys3-Cys14)을 보존하면서 나머지 12개 위치를 설계 가능하도록 설정.
+
+- **설계 가능 위치**: 12개 (pos 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14)
+- **고정 위치**: Cys3, Cys14 (디설파이드), Lys4 (일부 실험에서 고정)
+- **후보 수**: 각 실행당 20개
+
+### 8.2 최신 FastDesign 결과 (candidates/)
+
+| 순위 | 서열 | dG (REU) | dSASA (Å²) | 변이 수 | 고유 여부 |
+|------|------|---------|-----------|---------|----------|
+| **1** | `TPCQTWFYMDAISC` | **-62.9** | 2135.7 | 10 | O |
+| **2** | `TPCQIWFYMDAISC` | **-61.5** | 2110.4 | 10 | O |
+| **3** | `TPCQIWYTHDAISC` | -59.0 | 2129.0 | 11 | O |
+| **4** | `TPCQVWFYMSAISC` | -59.5 | 2116.0 | 10 | O |
+| **5** | `TPCQIWCTHSMISC` | -59.0 | 2132.9 | 11 | O |
+
+> **dG (REU)**: Rosetta 에너지 단위, 음수가 클수록 유리한 결합. 상위 후보는 야생형 대비 유의하게 낮은 에너지를 보임.
+> **dSASA**: 결합 시 묻히는 용매 접근 표면적, 2000 Å² 이상은 양호.
+
+### 8.3 설계 패턴 분석
+
+- **Pos 1-2**: `TP` (Thr-Pro) 패턴이 상위 후보에서 공통 출현 — β-turn 형성 유리
+- **Pos 5-6**: Aromatic (W, F, Y) 풍부 — SSTR2 포켓의 방향족 상호작용 유지
+- **Pos 8-9**: `TH`/`YM` 패턴 — 수소결합 네트워크 강화
+- **고유 서열률**: 20개 중 11개 고유 (55%) — 일부 서열 수렴 관찰
+
+### 8.4 3D 시각화 개선
+
+Cursor/VSCode 환경에서 py3Dmol JS 위젯이 렌더링되지 않는 문제를 해결:
+- HTML 파일 저장 → 브라우저 자동 오픈 폴백
+- `notebooks/3d_views/` 디렉토리에 캐시
+- 노트북 내 인라인 HTML + IFrame 듀얼 렌더링
+
+### 8.5 이전 실험 결과 (비교용)
+
+| 데이터셋 | 설계 위치 | 고유 서열 | 특징 |
+|----------|----------|----------|------|
+| `candidates/` (최신) | 12개 (광범위) | 11/20 | 최적 결과 |
+| `candidates_all_not_passed/` | 6개 (보수적) | 모두 검증 실패 | 설계 범위 부족 |
+| `candidates_all_same_fault/` | 6개 (보수적) | 동일 서열 수렴 | 다양성 부족 |
+
+---
+
+## 9. 통합 파이프라인 (Unified Binder Discovery)
+
+**노트북**: `notebooks/unified_sstr2_binder_discovery.ipynb`
+
+FastDesign (물리 기반) + De Novo (AI 기반) 결과를 가중합 스코어로 통합 랭킹하는 파이프라인.
+
+| Phase | 설명 |
+|-------|------|
+| Phase 0 | 환경 점검 & 공통 설정 |
+| Phase 1 | 구조 QC — FoldMason lDDT + Binding Pocket 분석 |
+| Phase 2 | FastDesign 파이프라인 — 펩타이드 서열 최적화 |
+| Phase 3 | De Novo 파이프라인 — RFdiffusion + ProteinMPNN + ESMFold |
+| Phase 4 | 통합 랭킹 — 가중합 스코어로 병합 |
+| Phase 5 | 최종 대시보드 & 시각화 |
+
+---
+
+## 10. 결과 비교 요약
 
 | Arm | 방법 | 후보 수 | 주요 지표 | 상태 |
 |-----|------|---------|----------|------|
 | 1 | 소분자 (MolMIM+DiffDock) | 40 (15 도킹) | QED=0.94, confidence=-3.0 | 완료 |
 | 2 | 펩타이드 변이체 | 13 | Ala scan + 강화 | 분석 완료, 도킹 미수행 |
 | 3 | De Novo (RFdiff+MPNN+ESMFold) | 16 | pLDDT=81.4 (최고) | 완료 |
+| **FastDesign** | **물리 기반 서열 최적화** | **20 (11 고유)** | **dG=-62.9 REU** | **완료** |
+| **통합** | **가중합 랭킹** | **전체** | **복합 스코어** | **완료** |
 
 ---
 
-## 9. 다음 단계
+## 11. 다음 단계
 
 ### 즉시 가능
-1. **AlphaFold3 Server 제출**: Top 4 de novo 펩타이드 + SSTR2 서열 → ipTM > 0.71 (Somatostatin 기준) 비교
+1. **AlphaFold3 Server 제출**: Top FastDesign 후보(`TPCQTWFYMDAISC`, `TPCQIWFYMDAISC`) + Top De Novo 후보 + SSTR2 → ipTM > 0.71 비교
 2. **DiffDock으로 Arm 2 검증**: 변이체 서열을 ESMFold로 구조 예측 → DiffDock 도킹
+3. **통합 랭킹 완성**: unified_sstr2_binder_discovery.ipynb에서 FastDesign dG + De Novo pLDDT 가중합
 
 ### 중기
-3. **PyRosetta 환경 정비**: FlexPepDock으로 Arm 2 에너지 비교
-4. **Hit 확장**: Top de novo 서열을 시드로 2차 RFdiffusion 라운드
-5. **Boltz-1/Chai-1**: 로컬 복합체 예측 (AlphaFold3 대안)
+4. **PyRosetta FlexPepDock**: 환경 준비 후 Arm 2 에너지 비교 (06_sstr2_flexpep_dock.py에서 자동 감지 구현 완료)
+5. **Hit 확장**: Top de novo 서열을 시드로 2차 RFdiffusion 라운드
+6. **Boltz-1/Chai-1**: 로컬 복합체 예측 (AlphaFold3 대안)
 
 ### 장기
-6. **MD 시뮬레이션**: GROMACS로 바인딩 안정성 및 residence time 예측
-7. **실험 검증**: 합성 가능성 평가 (synthetic accessibility), in vitro 바인딩 어세이
+7. **MD 시뮬레이션**: GROMACS로 바인딩 안정성 및 residence time 예측
+8. **실험 검증**: 합성 가능성 평가 (synthetic accessibility), in vitro 바인딩 어세이
 
 ---
 
-## 10. 사용 도구 전체 목록
+## 12. 사용 도구 전체 목록
 
 ### 로컬 도구 (Conda `bio-tools`)
 | 도구 | 용도 |
@@ -350,6 +419,15 @@ PRST_N_FM/
 │   ├── 06_sstr2_flexpep_dock.py
 │   └── 07_sstr2_denovo_binder.py
 │
+├── notebooks/                    # Jupyter 노트북 & 실험 결과
+│   ├── SSTR2_SST14_demo.ipynb   # FastDesign 펩타이드 최적화 (메인)
+│   ├── demo_sstr2_virtual_screening.ipynb  # 3-Arm 시각화
+│   ├── unified_sstr2_binder_discovery.ipynb # 통합 파이프라인
+│   ├── presentation_sstr2_pipeline.ipynb   # 발표용 대시보드
+│   ├── candidates/              # FastDesign 후보 PDB (최신, 20개)
+│   ├── candidates_all_not_passed/  # 검증 실패 후보 PDB (20개)
+│   └── candidates_all_same_fault/  # 동일 결함 후보 PDB (20개)
+│
 ├── results/sstr2_docking/        # 실험 결과
 │   ├── binding_pocket.json
 │   ├── sstr2_receptor.pdb
@@ -366,5 +444,16 @@ PRST_N_FM/
 │   └── 05_sstr2_virtual_screening.md
 │
 ├── scripts/                      # 실행 스크립트
+│
 └── docs/                         # 참조 문서
+    ├── BIONEMO_REFERENCE.md
+    ├── FOLDMASON_REFERENCE.md
+    ├── PYMOL_REFERENCE.md
+    ├── PYROSETTA_REFERENCE.md
+    ├── ENV_COMPATIBILITY.md
+    ├── PDB_VISUALIZATION_TOOLS.md
+    ├── pipeline_comparison.md         # 4가지 파이프라인 비교
+    ├── sstr2_demo_version_comparison.md  # 노트북 버전 비교
+    ├── sstr2_scientific_comparison.md    # 과학적 비교
+    └── pipeline_orchestration.svg
 ```

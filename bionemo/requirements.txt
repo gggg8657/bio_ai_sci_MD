@@ -3,7 +3,9 @@ requests>=2.28
 python-dotenv>=1.0
 
 # Chemistry / Molecular
-rdkit     # via conda: conda install -c conda-forge rdkit
+# rdkit: install via conda (not pip)
+#   conda install -c conda-forge rdkit
+# If pip-only env, use: pip install rdkit-pypi
 
 # ML for property prediction (scenario 3)
 numpy>=1.24
