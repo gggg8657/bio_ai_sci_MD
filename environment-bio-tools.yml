@@ -25,6 +25,8 @@ dependencies:
   - foldmason                           # Multiple structure alignment
   - tqdm                                # Progress bars
   - ipywidgets                          # Jupyter widget support for tqdm
+  - psutil                              # CPU / memory monitoring
   - pip:
     - meeko                             # AutoDock-GPU receptor/ligand prep
     - py3Dmol                           # Interactive 3D molecular viewer in Jupyter
+    - pynvml                            # GPU monitoring (graceful fallback if no GPU)
