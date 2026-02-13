@@ -44,7 +44,7 @@
   ── Monte Carlo + 에너지 최소화 사이클
   ── TaskFactory로 변이 위치 제어:
        • Receptor: 완전 고정 (PreventRepacking)
-       • Peptide Cys 3,13: 고정 (이황화결합 보존)
+       • Peptide Cys 3,14: 고정 (이황화결합 보존)
        • Design positions: 서열 변이 허용 (20종 AA)
        • 나머지 peptide: repack만 허용
        │
@@ -277,7 +277,7 @@ Stage 2: 정밀 최적화 (Approach A)
 
 2. **Rosetta 스코어 vs 실험적 결합력**: dG (REU)는 Rosetta의 에너지 단위이며, 실제 결합 자유 에너지(kcal/mol)와 정확히 비례하지 않을 수 있다. 실험적 검증 없이 스코어만으로 최종 판단하면 안 된다.
 
-3. **이황화결합 처리**: Cys3-Cys13 이황화결합은 코드에서 "고정"으로 처리되지만, PDB 라운드트립이나 FastRelax/FastDesign 과정에서 이 제약이 완벽히 보존되는지 추가 검증이 필요하다.
+3. **이황화결합 처리**: Cys3-Cys14 이황화결합은 코드에서 "고정"으로 처리되지만, PDB 라운드트립이나 FastRelax/FastDesign 과정에서 이 제약이 완벽히 보존되는지 추가 검증이 필요하다.
 
 ---
 

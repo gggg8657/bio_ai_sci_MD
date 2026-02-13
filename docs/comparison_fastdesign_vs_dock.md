@@ -12,8 +12,8 @@ SSTR2(Somatostatin Receptor 2) + SST14(Somatostatin-14) 복합체를 대상으�
 |-----------|----------|
 | Receptor  | SSTR2, 369 residues (Chain A after standardization) |
 | Peptide   | SST14, 14 residues: `AGCKNFFWKTFTSC` (Chain B after standardization) |
-| Disulfide | Cys3 — Cys13 (고정, 변이 불가) |
-| Design positions | 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14 (12개, Cys 제외) |
+| Disulfide | Cys3 — Cys14 (고정, 변이 불가) |
+| Design positions | 서열에서 Cys 자동 탐지하여 제외 (`scripts/peptide_design_utils.py`) |
 
 > **참고**: 원본 AlphaFold3 출력에서는 Chain A = Peptide(14 res), Chain B = Receptor(369 res)이나,
 > `SSTR2_SST14_demo.ipynb`의 표준화 단계에서 **A = Receptor, B = Peptide**로 통일된다.
